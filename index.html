@@ -25,7 +25,7 @@ $(function() {
 	var influxdb = new InfluxDB({"host": "influxdb.lan", "port": 8086, "username": "test", "password": "test", "database": "test"});
 
 	influxdb.query(
-		"SELECT count, gender FROM test.requests_gender where count > 0",
+		"select count(code) from test.requests group by time(1m), gender where time > now() - 30m",
 		function(points) {
 			var females = new Array();
 			var males = new Array();
