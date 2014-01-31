@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Stats</title>
+	<link type="text/css" rel="stylesheet" href="rickshaw.min.css">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+	<script src="d3.v3.min.js"></script>
+	<script src="rickshaw.min.js"></script>
+	<script src="influxdb.js"></script>
+</head>
+<body>
+
+<div id="chart_container">
+	<div id="chart"></div>
+	<div id="legend_container">
+		<div id="smoother" title="Smoothing"></div>
+		<div id="legend"></div>
+	</div>
+	<div id="slider"></div>
+</div>
+
+<script>
+$(function() {
+	var influxdb = new InfluxDB({"host": "influxdb.lan", "port": 8086, "username": "test", "password": "test", "database": "test"});
+
+	influxdb.query(
+		"SELECT count, gender FROM test.requests_gender where count > 0",
+		function(points) {
+			var females = new Array();
+			var males = new Array();
+			var data = points.forEach(function(point) {
+				entry = { x: point.time / 1000, y: point.count };
+				if (point.gender == 'male') {
+					males.push(entry);
+				} else {
+					females.push(entry);
+				}
+		    });
+
+			console.log(females);
+			var graph = new Rickshaw.Graph( {
+				element: document.querySelector("#chart"),
+				width: 960,
+				height: 500,
+				series: [
+					{
+						color: 'steelblue',
+						data: males.reverse(),
+						name: "male"
+					},
+					{
+						color: 'pink',
+						data: females.reverse(),
+						name: "female"
+					}
+				]
+			});
+
+			graph.render();
+
+			var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+				graph: graph
+			} );
+
+			var legend = new Rickshaw.Graph.Legend( {
+				graph: graph,
+				element: document.getElementById('legend')
+
+			} );
+
+			var shelving = new Rickshaw.Graph.Behavior.Series.Toggle( {
+				graph: graph,
+				legend: legend
+			} );
+
+			var axes = new Rickshaw.Graph.Axis.Time( {
+				graph: graph
+			} );
+			axes.render();
+		}
+	);
+});
+</script>
+</body>
+</html>
