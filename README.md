@@ -7,3 +7,11 @@ Influxdb interface at: http://influxdb.lan:8083
 
 Cluster admin: **root** / **root**  
 Database admin: **test** / **test** / **test**
+
+## Examples
+
+To see the last few seconds of mock data that was inserted, issue this query in the admin interface:
+
+```sql
+select * from test.requests where time > now() - 2s
+```
